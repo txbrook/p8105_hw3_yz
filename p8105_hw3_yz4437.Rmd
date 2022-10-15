@@ -181,7 +181,18 @@ tmax vs tmin for the full dataset
 ```{r}
 ny_noaa_tidy %>% 
 ggplot(aes(x = tmax, y = tmin)) + 
-  geom_hex()
+  geom_hex()+ theme(
+        legend.key.width = unit(2,"cm"))
 ```
+ distribution of snowfall values greater than 0 and less than 100 separately by year
+```{r}
+ny_noaa_tidy %>% 
+  select(year, snow) %>% 
+  filter(snow > 0 & snow < 100) %>% 
+  ggplot(aes(x = year, y = snow)) + 
+  geom_hex()+ theme(
+        legend.key.width = unit(2,"cm"))
+```
+ 
 
 
