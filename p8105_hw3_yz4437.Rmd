@@ -104,7 +104,7 @@ accel = read_csv("data/accel_data.csv") %>%
 accel = pivot_longer(
   accel, 
   activity_1:activity_1440,
-  names_to = "acitivity", 
+  names_to = "activity", 
   names_prefix = "activity_",
   values_to = "counts"
   )
@@ -112,18 +112,70 @@ accel = pivot_longer(
 
 ### analysis
 ```{r}
-accel = 
   accel %>% 
-  group_by(day_id,day) %>% 
-  summarize(
-    day_sum = sum(counts),
-  )
-trend_df=select(accel,day_id,day_sum)
+    group_by(day_id) %>% 
+    summarize(
+      day_sum = sum(counts),
+    )
+
 ```
 ### plot
 ```{r}
-
-ggplot(accel, aes(x = day_id, y = day_sum)) + 
-  geom_point(aes(color = day))
+accel %>%  
+  ggplot(aes(x = activity, y = counts, color = day)) +
+  geom_point()+
+  geom_line()+
+  labs(
+    title = "Plot of 24-hour activity time courses",
+    x = "Time (minute)",
+    y = "Activity counts"
+  )+
+  scale_x_discrete(breaks = seq(1,1440))+
+  scale_color_discrete(name = "Day of the week")
 ```
+## Problem 3
+
+load the data
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+```
+
+clean data
+```{r}
+ny_noaa_tidy = 
+  mutate(ny_noaa,
+    year = as.integer(lubridate::year(date)), 
+    month = as.integer(lubridate::month(date)), 
+    day = as.integer(lubridate::day(date)),
+    month = month.abb[month],
+    prcp = prcp/10,
+    tmin = as.numeric(tmin)/10,
+    tmax = as.numeric(tmax)/10) 
+
+Mode = function(x) {
+  ux = unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+ny_noaa_tidy %>% 
+  summarise(
+    mode_snow = Mode(snow))
+```
+
+
+```{r}
+ny_noaa_tidy %>% 
+  filter(month %in% c("Jan","Jul")) %>% 
+  group_by(id,year,month) %>% 
+  mutate(
+    avg_tmax = mean(tmax, na.rm = TRUE)
+    ) %>% 
+  
+  ggplot(aes(x = year, y = avg_tmax, color = id)) + 
+  geom_line() +
+  facet_grid(month~.) +
+  theme(legend.position = "none")
+```
+
+
 
