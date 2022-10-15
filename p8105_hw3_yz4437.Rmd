@@ -177,5 +177,11 @@ ny_noaa_tidy %>%
   theme(legend.position = "none")
 ```
 
+tmax vs tmin for the full dataset 
+```{r}
+ny_noaa_tidy %>% 
+ggplot(aes(x = tmax, y = tmin)) + 
+  geom_hex()
+```
 
 
