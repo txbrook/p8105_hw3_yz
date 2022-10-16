@@ -93,6 +93,8 @@ instacart %>%
 ## Problem 2
 
 ### tidy data
+
+clean the variables' names, a variable `day_type` is created for specifies weekday or weekend, convert `day_type` and `day` into factor variables. pivot long and create a variable `activity` for activtity number and `activity_count` for activity count. 
 ```{r}
 accel = read_csv("data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
@@ -108,6 +110,7 @@ accel = pivot_longer(
   names_prefix = "activity_",
   values_to = "activity_counts"
   )
+accel
 ```
 
 ### analysis
@@ -116,18 +119,20 @@ accel = pivot_longer(
     group_by(day_id) %>% 
     summarize(
       day_sum = sum(activity_counts),
-    )
-
+    ) %>% 
+  knitr::kable(col.names = c("Day id","Total activity counts"),digit = 1)
 ```
 ### plot
+
+a single-panel plot that shows the 24-hour activity time courses for each day and color for indicate day of the week.
 ```{r}
 accel %>%  
   ggplot(aes(x = activity, y = activity_counts, color = day)) +
   geom_point()+
   geom_line()+
   labs(
-    title = "Plot of 24-hour activity time courses",
-    x = "Time (minute)",
+    title = "24-hour activity time courses",
+    x = "Minutes of day",
     y = "Activity counts"
   )+
   scale_x_discrete(breaks = seq(1,1440))+
@@ -135,7 +140,7 @@ accel %>%
 ```
 ## Problem 3
 
-load the data and show structure of dataset
+###load the data and show structure of dataset
 ```{r}
 library(p8105.datasets)
 data("ny_noaa")
@@ -147,7 +152,8 @@ The size of the dataset is `r dim(ny_noaa)[1]` x `r dim(ny_noaa)[2]`, the struct
 There are `r round(sum(is.na(ny_noaa$prcp))/nrow(ny_noaa),2)*100`% missing data for `prcp`, `r round(sum(is.na(ny_noaa$snow))/nrow(ny_noaa),2)*100`% missing data for `snow`, `r round(sum(is.na(ny_noaa$snwd))/nrow(ny_noaa),2)*100`% missing data for `snwd`, `r round(sum(is.na(ny_noaa$tmax))/nrow(ny_noaa),2)*100`% missing data for `tmax`, `r round(sum(is.na(ny_noaa$tmin))/nrow(ny_noaa),2)*100`% missing data for `tmin`. Since missing data accounts for a large portion of dataset, Missing data will affect the accuracy of exploratory analysis to some extent.
 
 
-clean data. separate `date` variable into `year`, `month`, and `day`, convert`tmin` and `tmax` to numberic variable and handle observations for temperature, precipitation, and snowfall to reasonable units.
+###clean data
+separate `date` variable into `year`, `month`, and `day`, convert`tmin` and `tmax` to numberic variable and handle observations for temperature, precipitation, and snowfall to reasonable units.
 ```{r}
 ny_noaa_tidy = 
   mutate(ny_noaa,
@@ -214,7 +220,7 @@ According to boxplot, there are several outliers of average max temperature in J
 
 
 
-hexagonal heatmap of tmax vs tmin for the full dataset
+###hexagonal heatmap of tmax vs tmin for the full dataset
 ```{r}
 ny_noaa_tidy %>% 
 ggplot(aes(x = tmax, y = tmin)) + 
