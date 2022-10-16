@@ -106,7 +106,7 @@ accel = pivot_longer(
   activity_1:activity_1440,
   names_to = "activity", 
   names_prefix = "activity_",
-  values_to = "counts"
+  values_to = "activity_counts"
   )
 ```
 
@@ -115,14 +115,14 @@ accel = pivot_longer(
   accel %>% 
     group_by(day_id) %>% 
     summarize(
-      day_sum = sum(counts),
+      day_sum = sum(activity_counts),
     )
 
 ```
 ### plot
 ```{r}
 accel %>%  
-  ggplot(aes(x = activity, y = counts, color = day)) +
+  ggplot(aes(x = activity, y = activity_counts, color = day)) +
   geom_point()+
   geom_line()+
   labs(
