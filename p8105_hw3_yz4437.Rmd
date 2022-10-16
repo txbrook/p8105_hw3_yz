@@ -153,13 +153,10 @@ ny_noaa_tidy =
     tmin = as.numeric(tmin)/10,
     tmax = as.numeric(tmax)/10) 
 
-Mode = function(x) {
-  ux = unique(x)
-  ux[which.max(tabulate(match(x, ux)))]
-}
 ny_noaa_tidy %>% 
   summarise(
-    mode_snow = Mode(snow))
+    median_snow = median(snow, na.rm = T)
+    )
 ```
 
 
@@ -183,16 +180,25 @@ ny_noaa_tidy %>%
 ggplot(aes(x = tmax, y = tmin)) + 
   geom_hex()+ theme(
         legend.key.width = unit(2,"cm"))
+
 ```
  distribution of snowfall values greater than 0 and less than 100 separately by year
 ```{r}
-ny_noaa_tidy %>% 
-  select(year, snow) %>% 
-  filter(snow > 0 & snow < 100) %>% 
-  ggplot(aes(x = year, y = snow)) + 
-  geom_hex()+ theme(
-        legend.key.width = unit(2,"cm"))
+ny_noaa_tidy %>%
+  filter(snow>0,snow<100) %>%
+  ggplot(aes(x = snow, y = as.character(year))) + 
+  geom_boxplot()
+  labs(
+    title = "Distribution of snowfall in each year",
+    y = "Year",
+    x = "Snow fall (mm)",
+    caption = "Data from NOAA"
+  )
 ```
+
+
+
+
  
 
 
