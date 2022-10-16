@@ -175,7 +175,8 @@ ny_noaa_tidy =
     month = month.abb[month],
     prcp = prcp/10,
     tmin = as.numeric(tmin)/10,
-    tmax = as.numeric(tmax)/10)
+    tmax = as.numeric(tmax)/10
+    )
 ```
 
 Calculate the most commonly observed values for snowball.
@@ -187,6 +188,7 @@ ny_noaa_tidy %>%
 ```
 The most commonly observed values for snowfall is 0 mm, becasue this is the median from whole data of snowball. 
 
+###average max temperature in January and in July 
 calculate the average max temperature in January and in July in each station each year, and make a two-panel plot for  the average `tmax` across years.
 ```{r}
 ny_noaa_tidy %>% 
@@ -197,7 +199,7 @@ ny_noaa_tidy %>%
     ) %>% 
   
   ggplot(aes(x = year, y = avg_tmax, color = id)) + 
-  geom_line  +
+  geom_line()  +
   facet_grid(month~.) +
   theme(legend.position = "none") +
   labs(
@@ -208,9 +210,9 @@ ny_noaa_tidy %>%
     ) 
 
 ```
-According to plot,The average max temperature in January is about 0 C lower than July which is about 27C. There is no significant change across years.
+According to plot,The average max temperature in January is about 0C lower than July which is about 27C. There is no significant change across years.
 
-find the outliers for average max temperature in January and July
+create boxplot to find the outliers for average max temperature in January and July
 ```{r}
 ny_noaa_tidy %>% 
   filter(month %in% c("Jan","Jul")) %>% 
@@ -218,8 +220,8 @@ ny_noaa_tidy %>%
   mutate(
     avg_tmax = mean(tmax, na.rm = TRUE)
     ) %>% 
-  ggplot(aes(x = month, y = avg_tmax))+
-  geom_boxplot()+
+  ggplot(aes(x = month, y = avg_tmax)) +
+  geom_boxplot() +
   labs(
        title = "Boxplot for average max temperature in January and July",
        y = "Average maximum daily temperature (C)",
@@ -232,10 +234,12 @@ According to boxplot, there are several outliers of average max temperature in J
 
 
 
-###hexagonal heatmap of tmax vs tmin for the full dataset
+###tmax_tmin & snowfall
+hexagonal heatmap of tmax vs tmin for the full dataset and boxplot for distribution of snowfall values greater than 0 and less than 100 separately by year
 ```{r}
-ny_noaa_tidy %>% 
-ggplot(aes(x = tmax, y = tmin)) + 
+tmax_tmin =
+  ny_noaa_tidy %>% 
+  ggplot(aes(x = tmax, y = tmin)) + 
   geom_hex()+
   theme(
         legend.key.width = unit(2,"cm")
@@ -247,10 +251,8 @@ ggplot(aes(x = tmax, y = tmin)) +
     caption = "Data from NOAA"
   )
 
-```
-boxplot for distribution of snowfall values greater than 0 and less than 100 separately by year
-```{r}
-ny_noaa_tidy %>%
+snowfall = 
+  ny_noaa_tidy %>%
   filter(snow>0,snow<100) %>%
   ggplot(aes(x = snow, y = as.character(year))) + 
   geom_boxplot()+
@@ -260,6 +262,8 @@ ny_noaa_tidy %>%
     x = "Snow fall (mm)",
     caption = "Data from NOAA"
   )
+
+tmax_tmin + snowfall
 ```
 
 According to plot tmax vs tmin, the maximum temperature focus around 15C and the minimum temperature is focus around 5C.Maximum and minimum temperatures are roughly proportional.
