@@ -31,6 +31,7 @@ scale_fill_discrete = scale_fill_viridis_d
 ```
 
 ## Problem 1
+
 ```{r }
 library(p8105.datasets)
 #### Read in the data
@@ -90,11 +91,13 @@ instacart %>%
   spread(key = order_dow, value = mean_hour) %>%
   knitr::kable(digits = 2)
 ```
+
 ## Problem 2
 
 ### tidy data
 
-clean the variables' names, a variable `day_type` is created for specifies weekday or weekend, convert `day_type` and `day` into factor variables. pivot long and create a variable `activity` for acitivtity number and `activity_count` for activity count. 
+clean the variables' names, a variable `day_type` is created for specifies weekday or weekend, convert `day_type` and `day` into factor variables. pivot long and create a variable `activity` for acitivtity number and `activity_count` for activity count.
+
 ```{r}
 accel = read_csv("data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
@@ -112,11 +115,13 @@ accel = read_csv("data/accel_data.csv") %>%
   ) 
 accel
 ```
+
 The resulting dataset has `r ncol(accel)` variables, `week`: week number, `day_id`: day number, `day`: day of week, `day_type`:weekday or weekend, `activity_num`: the minute of the day and `activity_count`: the activity count of associated minute on the associated day. Dataset has `r nrow(accel)` observations for acitivity counts of specific minute and day.
 
 ### analysis
 
 a variable `activity_sum` is created for sum of activity counts of associated day and a table is created using kable.
+
 ```{r}
   accel %>% 
     group_by(day_id) %>% 
@@ -126,46 +131,47 @@ a variable `activity_sum` is created for sum of activity counts of associated da
   knitr::kable(col.names = c("Day id","Total activity counts"),digit = 2)
 ```
 
-There is not significant trend from table. 
+There is not significant trend from table.
 
 ### plot
+
 a single-panel plot that shows the 24-hour activity time courses for each day and color for indicate day of the week.
+
 ```{r}
 accel %>%  
   ggplot(aes(x = activity, y = activity_counts, color = day)) +
-  geom_point()+
-  geom_line()+
+  geom_point() +
+  geom_line() +
   labs(
     title = "24-hour activity time courses",
     x = "Minutes of day(minute)",
     y = "Activity counts"
-  )+
+  ) +
     scale_x_continuous(
     breaks = seq(0,1440,120), 
     labels = seq(0,1440,120)
-    )+
+    ) +
   scale_color_discrete(name = "Day of the week")
 ```
+
 According to this graph, activity counts during the day time is mostly greater than that at night, and the activity counts on weekdays is mostly greater than that on weekends. Activity counts mostly peak at 20:00 to 22:00.
-
-
 
 ## Problem 3
 
-###load the data and show structure of dataset
+load the data
 ```{r}
 library(p8105.datasets)
 data("ny_noaa")
-
-str(ny_noaa)
 ```
-The size of the dataset is `r dim(ny_noaa)[1]` x `r dim(ny_noaa)[2]`, the structure of the data is `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. For detail, three character variables `id`, `tmax`, `tmin`, data variable `date`, and three integer variable `prcp`, `snow`, `snwd`. some key variables are `id` :Weather station ID, `date` :Date of observation, `prcp` :Precipitation (tenths of mm), `snow` :Snowfall (mm), `snwd` :Snow depth (mm), `tmax` :Maximum temperature (tenths of degrees C) and `tmin` :Minimum temperature (tenths of degrees C). 
 
-There are `r round(sum(is.na(ny_noaa$prcp))/nrow(ny_noaa),2)*100`% missing data for `prcp`, `r round(sum(is.na(ny_noaa$snow))/nrow(ny_noaa),2)*100`% missing data for `snow`, `r round(sum(is.na(ny_noaa$snwd))/nrow(ny_noaa),2)*100`% missing data for `snwd`, `r round(sum(is.na(ny_noaa$tmax))/nrow(ny_noaa),2)*100`% missing data for `tmax`, `r round(sum(is.na(ny_noaa$tmin))/nrow(ny_noaa),2)*100`% missing data for `tmin`. Since missing data accounts for a large portion of dataset, Missing data will affect the accuracy of exploratory analysis to some extent.
+The size of the dataset is `r dim(ny_noaa)[1]` x `r dim(ny_noaa)[2]`, the structure of the data is `r nrow(ny_noaa)` observations have `r ncol(ny_noaa)` variables. Some key variables are `id` :Weather station ID, `date` :Date of observation, `prcp` :Precipitation (tenths of mm), `snow` :Snowfall (mm), `snwd` :Snow depth (mm), `tmax` :Maximum temperature (tenths of degrees C) and `tmin` :Minimum temperature (tenths of degrees C).
 
+There are `r round(sum(is.na(ny_noaa$prcp))/nrow(ny_noaa),2)*100`% missing data for `prcp`, `r round(sum(is.na(ny_noaa$snow))/nrow(ny_noaa),2)*100`% missing data for `snow`, `r round(sum(is.na(ny_noaa$snwd))/nrow(ny_noaa),2)*100`% missing data for `snwd`, `r round(sum(is.na(ny_noaa$tmax))/nrow(ny_noaa),2)*100`% missing data for `tmax`, `r round(sum(is.na(ny_noaa$tmin))/nrow(ny_noaa),2)*100`% missing data for `tmin`. Missing data accounts for a large portion of dataset. But, it has little effect on the macro results.
 
-###clean data
+### clean data 
+
 separate `date` variable into `year`, `month`, and `day`, convert`tmin` and `tmax` to numberic variable and handle observations for temperature, precipitation, and snowfall to reasonable units.
+
 ```{r}
 ny_noaa_tidy = 
   mutate(ny_noaa,
@@ -179,17 +185,24 @@ ny_noaa_tidy =
     )
 ```
 
-Calculate the most commonly observed values for snowball.
-```{r}
-ny_noaa_tidy %>% 
-  summarise(
-    median_snow = median(snow, na.rm = T)
-    )
-```
-The most commonly observed values for snowfall is 0 mm, becasue this is the median from whole data of snowball. 
+Count the most commonly observed values for snowball.
 
-###average max temperature in January and in July 
-calculate the average max temperature in January and in July in each station each year, and make a two-panel plot for  the average `tmax` across years.
+```{r}
+ny_noaa %>%
+  group_by(snow) %>%
+  summarise(
+    n_obs = n()
+    ) %>%
+  arrange(-n_obs) %>%
+  head(3)
+```
+
+The most commonly observed values for snowfall is 0 mm, becasue 0 appears most frequently.
+
+### average max temperature in January and in July
+
+calculate the average max temperature in January and in July in each station each year, and make a two-panel plot for the average `tmax` across years.
+
 ```{r}
 ny_noaa_tidy %>% 
   filter(month %in% c("Jan","Jul")) %>% 
@@ -199,8 +212,8 @@ ny_noaa_tidy %>%
     ) %>% 
   
   ggplot(aes(x = year, y = avg_tmax, color = id)) + 
-  geom_line()  +
-  facet_grid(month~.) +
+  geom_line(alpha = 0.5)  +
+  facet_grid(.~month) +
   theme(legend.position = "none") +
   labs(
     title = "Average maximum temperature in Jan and Jul from each station",
@@ -210,31 +223,34 @@ ny_noaa_tidy %>%
     ) 
 
 ```
+
 According to plot,The average max temperature in January is about 0C lower than July which is about 27C. There is no significant change across years.
 
-create boxplot to find the outliers for average max temperature in January and July
+create thresholds can find the outliers for average max temperature in January and July by filter data
+
 ```{r}
-ny_noaa_tidy %>% 
+outliers = 
+  ny_noaa_tidy %>% 
   filter(month %in% c("Jan","Jul")) %>% 
-  group_by(id,month) %>% 
+  group_by(id,year,month) %>% 
   mutate(
     avg_tmax = mean(tmax, na.rm = TRUE)
-    ) %>% 
-  ggplot(aes(x = month, y = avg_tmax)) +
-  geom_boxplot() +
-  labs(
-       title = "Boxplot for average max temperature in January and July",
-       y = "Average maximum daily temperature (C)",
-       x = "Month",
-       caption = "Data from NOAA"
-       )
+  ) %>% 
+  group_by(month) %>% 
+  mutate(
+    threshold_min = median(avg_tmax, na.rm = TRUE) - (3 * mad(avg_tmax, na.rm = TRUE)),
+    threshold_max = median(avg_tmax, na.rm = TRUE) + (3 * mad(avg_tmax, na.rm = TRUE))
+  ) %>% 
+  filter(avg_tmax < threshold_min | avg_tmax > threshold_max) %>% 
+  select(id,year,month,avg_tmax) %>% 
+  distinct()
+outliers
 ```
-According to boxplot, there are several outliers of average max temperature in Jan and Jul.
 
+there are several outliers of average max temperature in Jan and Jul according to this threshold.
 
+### tmax_tmin & snowfall 
 
-
-###tmax_tmin & snowfall
 hexagonal heatmap of tmax vs tmin for the full dataset and boxplot for distribution of snowfall values greater than 0 and less than 100 separately by year
 ```{r}
 tmax_tmin =
@@ -254,8 +270,8 @@ tmax_tmin =
 snowfall = 
   ny_noaa_tidy %>%
   filter(snow>0,snow<100) %>%
-  ggplot(aes(x = snow, y = as.character(year))) + 
-  geom_boxplot()+
+  ggplot(aes(x = snow, y = as.factor(year), fill = year)) + 
+  geom_density_ridges(scale = 1)+
   labs(
     title = "Distribution of snowfall in each year",
     y = "Year",
@@ -268,9 +284,4 @@ tmax_tmin + snowfall
 
 According to plot tmax vs tmin, the maximum temperature focus around 15C and the minimum temperature is focus around 5C.Maximum and minimum temperatures are roughly proportional.
 
-The distribution of snowfall values greater than 0 and less than 100 separately by year are most right-skewed and medians are all around 25mm.
-
-
- 
-
-
+The distribution of snowfall values greater than 0 and less than 100 separately by year are most between 0 mm and 30 mm and at peak in 25 mm.
