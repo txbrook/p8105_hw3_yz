@@ -135,13 +135,19 @@ accel %>%
 ```
 ## Problem 3
 
-load the data
+load the data and show structure of dataset
 ```{r}
 library(p8105.datasets)
 data("ny_noaa")
-```
 
-clean data
+str(ny_noaa)
+```
+The size of the dataset is `r dim(ny_noaa)[1]` x `r dim(ny_noaa)[2]`, the structure of the data is `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. For detail, three character variables `id`, `tmax`, `tmin`, data variable `date`, and three integer variable `prcp`, `snow`, `snwd`. some key variables are `id` :Weather station ID, `date` :Date of observation, `prcp` :Precipitation (tenths of mm), `snow` :Snowfall (mm), `snwd` :Snow depth (mm), `tmax` :Maximum temperature (tenths of degrees C) and `tmin` :Minimum temperature (tenths of degrees C). 
+
+There are `r round(sum(is.na(ny_noaa$prcp))/nrow(ny_noaa),2)*100`% missing data for `prcp`, `r round(sum(is.na(ny_noaa$snow))/nrow(ny_noaa),2)*100`% missing data for `snow`, `r round(sum(is.na(ny_noaa$snwd))/nrow(ny_noaa),2)*100`% missing data for `snwd`, `r round(sum(is.na(ny_noaa$tmax))/nrow(ny_noaa),2)*100`% missing data for `tmax`, `r round(sum(is.na(ny_noaa$tmin))/nrow(ny_noaa),2)*100`% missing data for `tmin`. Since missing data accounts for a large portion of dataset, Missing data will affect the accuracy of exploratory analysis to some extent.
+
+
+clean data. separate `date` variable into `year`, `month`, and `day`, convert`tmin` and `tmax` to numberic variable and handle observations for temperature, precipitation, and snowfall to reasonable units.
 ```{r}
 ny_noaa_tidy = 
   mutate(ny_noaa,
@@ -151,15 +157,19 @@ ny_noaa_tidy =
     month = month.abb[month],
     prcp = prcp/10,
     tmin = as.numeric(tmin)/10,
-    tmax = as.numeric(tmax)/10) 
+    tmax = as.numeric(tmax)/10)
+```
 
+Calculate the most commonly observed values for snowball.
+```{r}
 ny_noaa_tidy %>% 
   summarise(
     median_snow = median(snow, na.rm = T)
     )
 ```
+The most commonly observed values for snowfall is 0 mm, becasue this is the median from whole data of snowball. 
 
-
+calculate the average max temperature in January and in July in each station each year, and make a two-panel plot for  the average `tmax` across years.
 ```{r}
 ny_noaa_tidy %>% 
   filter(month %in% c("Jan","Jul")) %>% 
@@ -169,10 +179,40 @@ ny_noaa_tidy %>%
     ) %>% 
   
   ggplot(aes(x = year, y = avg_tmax, color = id)) + 
-  geom_line() +
-  facet_grid(month~.) +
-  theme(legend.position = "none")
+  geom_boxplot(aes()) +
+  facet_grid(.~month) +
+  theme(legend.position = "none") +
+  labs(
+    title = "Average maximum temperature in Jan and Jul from each station",
+    x = "Year",
+    y = "Average maximum daily temperature (C)",
+    caption = "Data from NOAA"
+    ) 
+
 ```
+
+
+find the outliers for average max temperature in January and July
+```{r}
+ny_noaa_tidy %>% 
+  filter(month %in% c("Jan","Jul")) %>% 
+  group_by(id,month) %>% 
+  mutate(
+    avg_tmax = mean(tmax, na.rm = TRUE)
+    ) %>% 
+  ggplot(aes(x = month, y = avg_tmax))+
+  geom_boxplot()+
+  labs(
+       title = "Boxplot for average max temperature in January and July",
+       y = "Average maximum daily temperature (C)",
+       x = "Month",
+       caption = "Data from NOAA"
+       )
+```
+
+
+
+
 
 tmax vs tmin for the full dataset 
 ```{r}
