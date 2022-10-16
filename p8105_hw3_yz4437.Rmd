@@ -94,36 +94,41 @@ instacart %>%
 
 ### tidy data
 
-clean the variables' names, a variable `day_type` is created for specifies weekday or weekend, convert `day_type` and `day` into factor variables. pivot long and create a variable `activity` for activtity number and `activity_count` for activity count. 
+clean the variables' names, a variable `day_type` is created for specifies weekday or weekend, convert `day_type` and `day` into factor variables. pivot long and create a variable `activity` for acitivtity number and `activity_count` for activity count. 
 ```{r}
 accel = read_csv("data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
-  mutate(
-    day_type = ifelse(day == "Sunday" | day == "Saturday","weekend","weekday"),
-    day_type = as.factor(day_type),
-    day = as.factor(day)
-  ) 
-accel = pivot_longer(
-  accel, 
+  pivot_longer(
   activity_1:activity_1440,
   names_to = "activity", 
   names_prefix = "activity_",
   values_to = "activity_counts"
-  )
+  ) %>% 
+  mutate(
+    day_type = ifelse(day == "Sunday" | day == "Saturday","weekend","weekday"),
+    day_type = as.factor(day_type),
+    day = as.factor(day),
+    activity = as.numeric(activity)
+  ) 
 accel
 ```
+The resulting dataset has `r ncol(accel)` variables, `week`: week number, `day_id`: day number, `day`: day of week, `day_type`:weekday or weekend, `activity_num`: the minute of the day and `activity_count`: the activity count of associated minute on the associated day. Dataset has `r nrow(accel)` observations for acitivity counts of specific minute and day.
 
 ### analysis
+
+a variable `activity_sum` is created for sum of activity counts of associated day and a table is created using kable.
 ```{r}
   accel %>% 
     group_by(day_id) %>% 
     summarize(
       day_sum = sum(activity_counts),
     ) %>% 
-  knitr::kable(col.names = c("Day id","Total activity counts"),digit = 1)
+  knitr::kable(col.names = c("Day id","Total activity counts"),digit = 2)
 ```
-### plot
 
+There is not significant trend from table. 
+
+### plot
 a single-panel plot that shows the 24-hour activity time courses for each day and color for indicate day of the week.
 ```{r}
 accel %>%  
@@ -132,12 +137,19 @@ accel %>%
   geom_line()+
   labs(
     title = "24-hour activity time courses",
-    x = "Minutes of day",
+    x = "Minutes of day(minute)",
     y = "Activity counts"
   )+
-  scale_x_discrete(breaks = seq(1,1440))+
+    scale_x_continuous(
+    breaks = seq(0,1440,120), 
+    labels = seq(0,1440,120)
+    )+
   scale_color_discrete(name = "Day of the week")
 ```
+According to this graph, activity counts during the day time is mostly greater than that at night, and the activity counts on weekdays is mostly greater than that on weekends. Activity counts mostly peak at 20:00 to 22:00.
+
+
+
 ## Problem 3
 
 ###load the data and show structure of dataset
