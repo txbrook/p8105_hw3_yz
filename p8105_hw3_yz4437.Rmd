@@ -179,8 +179,8 @@ ny_noaa_tidy %>%
     ) %>% 
   
   ggplot(aes(x = year, y = avg_tmax, color = id)) + 
-  geom_boxplot(aes()) +
-  facet_grid(.~month) +
+  geom_line  +
+  facet_grid(month~.) +
   theme(legend.position = "none") +
   labs(
     title = "Average maximum temperature in Jan and Jul from each station",
@@ -190,7 +190,7 @@ ny_noaa_tidy %>%
     ) 
 
 ```
-
+According to plot,The average max temperature in January is about 0 C lower than July which is about 27C. There is no significant change across years.
 
 find the outliers for average max temperature in January and July
 ```{r}
@@ -209,25 +209,33 @@ ny_noaa_tidy %>%
        caption = "Data from NOAA"
        )
 ```
+According to boxplot, there are several outliers of average max temperature in Jan and Jul.
 
 
 
 
-
-tmax vs tmin for the full dataset 
+hexagonal heatmap of tmax vs tmin for the full dataset
 ```{r}
 ny_noaa_tidy %>% 
 ggplot(aes(x = tmax, y = tmin)) + 
-  geom_hex()+ theme(
-        legend.key.width = unit(2,"cm"))
+  geom_hex()+
+  theme(
+        legend.key.width = unit(2,"cm")
+  )+
+  labs(
+    title = "Max temperature vs Min temperature",
+    x = "Minimum temperature (C)",
+    y = "Maximum temperature (C)",
+    caption = "Data from NOAA"
+  )
 
 ```
- distribution of snowfall values greater than 0 and less than 100 separately by year
+boxplot for distribution of snowfall values greater than 0 and less than 100 separately by year
 ```{r}
 ny_noaa_tidy %>%
   filter(snow>0,snow<100) %>%
   ggplot(aes(x = snow, y = as.character(year))) + 
-  geom_boxplot()
+  geom_boxplot()+
   labs(
     title = "Distribution of snowfall in each year",
     y = "Year",
@@ -236,7 +244,9 @@ ny_noaa_tidy %>%
   )
 ```
 
+According to plot tmax vs tmin, the maximum temperature focus around 15C and the minimum temperature is focus around 5C.Maximum and minimum temperatures are roughly proportional.
 
+The distribution of snowfall values greater than 0 and less than 100 separately by year are most right-skewed and medians are all around 25mm.
 
 
  
